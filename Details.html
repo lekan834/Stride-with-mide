@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Details</title>
+</head>
+<body>
+    <div id="product-details-container">
+        <h1>Loading product...</h1>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
+    <script>
+        const client = contentful.createClient({ 
+            space: 'ntzxqqxda5ma', 
+            accessToken: 'AZZvP-qm49eg6mByKlG6hnFu7mhYI5XsyauAb1J9b-E' 
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+
+        async function fetchProduct() {
+            if (!productId) {
+                document.getElementById('product-details-container').innerHTML = "<h1>No Product ID found in URL</h1>";
+                return;
+            }
+
+            try {
+                const entry = await client.getEntry(productId);
+                const f = entry.fields;
+
+                document.getElementById('product-details-container').innerHTML = `
+                    <h1>${f.productName}</h1>
+                    <div class="gallery">
+                        ${f.gallery ? f.gallery.map(img => `<img src="${img.fields.file.url}" style="width:200px; display:block; margin:10px;">`).join('') : ''}
+                    </div>
+                    <p><strong>Description:</strong> ${f.description || 'No description'}</p>
+                    <p><strong>Price:</strong> ₦${f.price}</p>
+                    <a href="shop.html">Back to Shop</a>
+                `;
+            } catch (err) {
+                document.getElementById('product-details-container').innerHTML = "<h1>Error: Could not find product.</h1>";
+            }
+        }
+        fetchProduct();
+    </script>
+</body>
+</html>
