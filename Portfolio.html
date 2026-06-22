@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Stride with Mide</title>
+    <style>
+        :root { --gold: #D4AF37; --bg: #FFFFFF; --text: #1a1a1a; --card-bg: #f9f9f9; --border: #ddd; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        
+        nav { padding: 20px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        nav ul { list-style: none; display: flex; gap: 20px; }
+        nav a { text-decoration: none; color: var(--text); font-weight: bold; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; padding: 20px 5%; }
+        .card { border: 1px solid var(--border); padding: 15px; border-radius: 12px; background: var(--card-bg); transition: 0.3s; }
+        .card img { width: 100%; height: 250px; object-fit: cover; border-radius: 8px; }
+        
+        .section-title { text-align:center; margin: 40px 0; color: var(--gold); text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <h2 style="color: var(--gold); margin:0;">STRIDE WITH MIDE</h2>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="shop.html">Shop</a></li>
+            <li><a href="portfolio.html">Portfolio</a></li>
+        </ul>
+    </nav>
+
+    <h2 class="section-title">Our Past Work</h2>
+
+    <div id="portfolio-grid" class="grid">
+        <p style="text-align:center;">Loading gallery...</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
+    <script>
+        // Centralized logic included directly here for simplicity
+        const client = contentful.createClient({
+            space: 'ntzxqqxda5ma',
+            accessToken: 'AZZvP-qm49eg6mByKlG6hnFu7mhYI5XsyauAb1J9b-E'
+        });
+
+        async function fetchPortfolio() {
+            try {
+                const res = await client.getEntries({ content_type: 'strideWithMidePortfolio' });
+                const items = res.items;
+
+                if (items.length === 0) {
+                    document.getElementById('portfolio-grid').innerHTML = "<p>No portfolio items found.</p>";
+                    return;
+                }
+
+                document.getElementById('portfolio-grid').innerHTML = items.map(p => `
+                    <div class="card">
+                        <img src="${p.fields.image.fields.file.url}" alt="${p.fields.title}">
+                        <h3 style="text-align:center;">${p.fields.title}</h3>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Error loading portfolio:", err);
+                document.getElementById('portfolio-grid').innerHTML = "<p>Failed to load gallery.</p>";
+            }
+        }
+
+        window.addEventListener('load', fetchPortfolio);
+    </script>
+</body>
+</html>
