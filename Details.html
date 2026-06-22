@@ -2,15 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Product Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | Stride with Mide</title>
+    <style>
+        :root { --gold: #D4AF37; --bg: #FFFFFF; --text: #1a1a1a; --card-bg: #f9f9f9; --border: #ddd; }
+        body.dark-mode { --bg: #1a1a1a; --text: #FFFFFF; --card-bg: #222222; --border: #333; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; transition: 0.3s; }
+        
+        .container { max-width: 800px; margin: auto; background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
+        
+        /* Grid Gallery */
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin: 20px 0; }
+        .gallery img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; border: 2px solid var(--gold); cursor: pointer; transition: 0.3s; }
+        .gallery img:hover { transform: scale(1.05); }
+
+        .btn-gold { background: var(--gold); color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px; font-weight: bold; border: none; cursor: pointer; }
+
+        /* Lightbox Styles */
+        .lightbox { display: none; position: fixed; z-index: 999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        .lightbox img { max-width: 90%; max-height: 80%; border: 3px solid var(--gold); border-radius: 8px; }
+        .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <div id="product-details-container">
+
+    <div class="container" id="product-details-container">
         <h1>Loading product...</h1>
+    </div>
+
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="close-lightbox">&times;</span>
+        <img id="lightbox-img" src="">
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
     <script>
+        // Theme Sync
+        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
         const client = contentful.createClient({ 
             space: 'ntzxqqxda5ma', 
             accessToken: 'AZZvP-qm49eg6mByKlG6hnFu7mhYI5XsyauAb1J9b-E' 
@@ -19,9 +48,16 @@
         const params = new URLSearchParams(window.location.search);
         const productId = params.get('id');
 
+        // Lightbox Functions
+        function openLightbox(url) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+
         async function fetchProduct() {
             if (!productId) {
-                document.getElementById('product-details-container').innerHTML = "<h1>No Product ID found in URL</h1>";
+                document.getElementById('product-details-container').innerHTML = "<h1>Error: No Product Selected</h1><a href='shop.html' class='btn-gold'>Back to Shop</a>";
                 return;
             }
 
@@ -32,14 +68,21 @@
                 document.getElementById('product-details-container').innerHTML = `
                     <h1>${f.productName}</h1>
                     <div class="gallery">
-                        ${f.gallery ? f.gallery.map(img => `<img src="${img.fields.file.url}" style="width:200px; display:block; margin:10px;">`).join('') : ''}
+                        ${f.gallery ? f.gallery.map(img => `
+                            <img src="${img.fields.file.url}" onclick="openLightbox('${img.fields.file.url}')">
+                        `).join('') : '<p>No images.</p>'}
                     </div>
-                    <p><strong>Description:</strong> ${f.description || 'No description'}</p>
-                    <p><strong>Price:</strong> ₦${f.price}</p>
-                    <a href="shop.html">Back to Shop</a>
+                    <p><strong>Description:</strong> ${f.description || 'No description provided.'}</p>
+                    <p><strong>Available Sizes:</strong> ${f.availableSizes || 'N/A'}</p>
+                    <p><strong>Price:</strong> ₦${f.price ? f.price.toLocaleString() : 'Contact for price'}</p>
+                    
+                    <a href="shop.html" class="btn-gold">← Back to Shop</a>
+                    <button class="btn-gold" style="background: #25D366; margin-left: 10px;" onclick="window.open('https://wa.me/2348066948611?text=Hi, I want to order ${f.productName}')">
+                        Order on WhatsApp 💬
+                    </button>
                 `;
             } catch (err) {
-                document.getElementById('product-details-container').innerHTML = "<h1>Error: Could not find product.</h1>";
+                document.getElementById('product-details-container').innerHTML = "<h1>Product not found.</h1><a href='shop.html' class='btn-gold'>Back to Shop</a>";
             }
         }
         fetchProduct();
