@@ -6,19 +6,21 @@
     <title>Stride with Mide | Luxury Urban Footwear</title>
     <style>
         :root { --gold: #D4AF37; --bg: #FFFFFF; --text: #1a1a1a; --card-bg: #f9f9f9; --border: #ddd; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+        body.dark-mode { --bg: #1a1a1a; --text: #FFFFFF; --card-bg: #222222; --border: #333; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; }
         
         nav { padding: 20px; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
         nav ul { list-style: none; display: flex; gap: 20px; }
         nav a { text-decoration: none; color: var(--text); font-weight: bold; }
         
+        .controls { text-align: center; padding: 15px; background: var(--card-bg); border-bottom: 1px solid var(--border); }
         .hero { height: 60vh; background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1549298916-b41d501d3772'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; color: white; text-align: center; }
         .hero h1 { font-size: 3rem; margin-bottom: 10px; }
         .btn-gold { background: var(--gold); color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin-top: 10px; }
         
         .section-title { color: var(--gold); text-align: center; margin: 40px 0; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; padding: 20px; }
-        .card { border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: var(--card-bg); }
+        .card { border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: var(--card-bg); transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -31,6 +33,10 @@
             <li><a href="portfolio.html">Portfolio</a></li>
         </ul>
     </nav>
+
+    <div class="controls">
+        <button onclick="toggleTheme()">Toggle Dark Mode 🌗</button>
+    </div>
 
     <header class="hero">
         <div>
@@ -48,6 +54,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
     <script>
+        // 1. Theme Persistence Logic
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // 2. Contentful Logic
         const client = contentful.createClient({
             space: 'ntzxqqxda5ma',
             accessToken: 'AZZvP-qm49eg6mByKlG6hnFu7mhYI5XsyauAb1J9b-E' 
@@ -59,9 +76,6 @@
                     client.getEntries({ content_type: 'strideWithMideProduct', limit: 3 }),
                     client.getEntries({ content_type: 'strideWithMideRevIew' })
                 ]);
-
-                console.log("Products loaded:", products.items.length);
-                console.log("Reviews loaded:", reviews.items.length);
 
                 // Render Products
                 document.getElementById('catalog-grid').innerHTML = products.items.map(p => `
@@ -84,10 +98,9 @@
                         </div>
                     `).join('');
                 }
-
             } catch (err) { 
                 console.error("Full Error:", err);
-                document.getElementById('review-grid').innerHTML = "Error loading reviews. Check Console.";
+                document.getElementById('review-grid').innerHTML = "Error loading content.";
             }
         }
         init();
