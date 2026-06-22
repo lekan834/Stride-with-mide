@@ -8,18 +8,17 @@
         :root { --gold: #D4AF37; --bg: #FFFFFF; --text: #1a1a1a; --card-bg: #f9f9f9; --border: #ddd; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
         
-        /* Navigation */
         nav { padding: 20px; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
         nav ul { list-style: none; display: flex; gap: 20px; }
         nav a { text-decoration: none; color: var(--text); font-weight: bold; }
         
-        /* Hero Section */
         .hero { height: 60vh; background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1549298916-b41d501d3772'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; color: white; text-align: center; }
         .hero h1 { font-size: 3rem; margin-bottom: 10px; }
-        .btn-gold { background: var(--gold); color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; }
+        .btn-gold { background: var(--gold); color: white; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; margin-top: 10px; }
         
         .section-title { color: var(--gold); text-align: center; margin: 40px 0; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; padding: 20px; }
+        .card { border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: var(--card-bg); }
     </style>
 </head>
 <body>
@@ -37,17 +36,18 @@
         <div>
             <h1>Crafted for the Urban Stride</h1>
             <p>Premium bespoke luxury footwear.</p>
-            <br>
             <a href="shop.html" class="btn-gold">View Collection</a>
         </div>
     </header>
 
     <h2 class="section-title">Featured Highlights</h2>
-    <div id="catalog-grid" class="grid">Loading collection...</div>
+    <div id="catalog-grid" class="grid">Loading...</div>
+
+    <h2 class="section-title">Happy Customers</h2>
+    <div id="review-grid" class="grid">Loading...</div>
 
     <script src="https://cdn.jsdelivr.net/npm/contentful@latest/dist/contentful.browser.min.js"></script>
     <script>
-        // Note: Replace with your actual token
         const client = contentful.createClient({
             space: 'ntzxqqxda5ma',
             accessToken: 'AZZvP-qm49eg6mByKlG6hnFu7mhYI5XsyauAb1J9b-E' 
@@ -55,7 +55,15 @@
 
         async function init() {
             try {
-                const products = await client.getEntries({ content_type: 'strideWithMideProduct', limit: 3 });
+                const [products, reviews] = await Promise.all([
+                    client.getEntries({ content_type: 'strideWithMideProduct', limit: 3 }),
+                    client.getEntries({ content_type: 'strideWithMideRevIew' })
+                ]);
+
+                console.log("Products loaded:", products.items.length);
+                console.log("Reviews loaded:", reviews.items.length);
+
+                // Render Products
                 document.getElementById('catalog-grid').innerHTML = products.items.map(p => `
                     <div class="card">
                         <img src="${p.fields.gallery[0].fields.file.url}" style="width:100%; height:200px; object-fit:cover; border-radius:8px;">
@@ -63,7 +71,24 @@
                         <a href="shop.html" class="btn-gold" style="display:block; text-align:center;">View Details</a>
                     </div>
                 `).join('');
-            } catch (err) { console.error(err); }
+
+                // Render Reviews
+                if (reviews.items.length === 0) {
+                    document.getElementById('review-grid').innerHTML = "<p>No reviews published yet.</p>";
+                } else {
+                    document.getElementById('review-grid').innerHTML = reviews.items.map(r => `
+                        <div class="card">
+                            <h3>${r.fields.customerName}</h3>
+                            <p>"${r.fields.reviewText}"</p>
+                            <p style="color:var(--gold); font-weight:bold;">Rating: ${r.fields.rating}/5 ⭐</p>
+                        </div>
+                    `).join('');
+                }
+
+            } catch (err) { 
+                console.error("Full Error:", err);
+                document.getElementById('review-grid').innerHTML = "Error loading reviews. Check Console.";
+            }
         }
         init();
     </script>
