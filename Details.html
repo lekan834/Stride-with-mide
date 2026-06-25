@@ -17,6 +17,7 @@
         .gallery img:hover { transform: scale(1.05); }
 
         .btn-gold { background: var(--gold); color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-cart { background: #333; } /* Different color for cart */
 
         /* Lightbox Styles */
         .lightbox { display: none; position: fixed; z-index: 999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
@@ -39,6 +40,14 @@
     <script>
         // Theme Sync
         if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+        // Cart Logic
+        function addToCart(name, price) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push({ name: name, price: price });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(name + " added to your cart!");
+        }
 
         const client = contentful.createClient({ 
             space: 'ntzxqqxda5ma', 
@@ -77,6 +86,11 @@
                     <p><strong>Price:</strong> ₦${f.price ? f.price.toLocaleString() : 'Contact for price'}</p>
                     
                     <a href="shop.html" class="btn-gold">← Back to Shop</a>
+                    
+                    <button class="btn-gold btn-cart" onclick="addToCart('${f.productName}', '${f.price}')">
+                        Add to Cart 🛒
+                    </button>
+                    
                     <button class="btn-gold" style="background: #25D366; margin-left: 10px;" onclick="window.open('https://wa.me/2348066948611?text=Hi, I want to order ${f.productName}')">
                         Order on WhatsApp 💬
                     </button>
