@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout | Stride with Mide</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        .cart-item { border-bottom: 1px solid #ddd; padding: 15px 0; display: flex; justify-content: space-between; }
+        .btn-whatsapp { background: #25D366; color: white; padding: 15px; text-decoration: none; border-radius: 5px; display: block; text-align: center; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Your Cart</h1>
+    <div id="cart-items"></div>
+    <h3 id="cart-total"></h3>
+    <a href="#" id="whatsapp-link" class="btn-whatsapp">Checkout via WhatsApp 💬</a>
+
+    <script>
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const container = document.getElementById('cart-items');
+        let total = 0;
+        let message = "Hi Stride with Mide, I'd like to order: %0A";
+
+        if(cart.length === 0) {
+            container.innerHTML = "<p>Your cart is empty.</p>";
+        } else {
+            cart.forEach((item, index) => {
+                container.innerHTML += `<div class="cart-item"><span>${item.name}</span> <span>₦${item.price}</span></div>`;
+                total += parseInt(item.price);
+                message += `${index + 1}. ${item.name} - ₦${item.price} %0A`;
+            });
+            message += `%0ATotal: ₦${total}`;
+            document.getElementById('cart-total').innerText = "Total: ₦" + total;
+            document.getElementById('whatsapp-link').href = `https://wa.me/2348066948611?text=${message}`;
+        }
+    </script>
+</body>
+</html>
